@@ -1,26 +1,20 @@
 'use strict';
 
-var phoneBook = []; 
+var phoneBook = [];
 
-function isCorrectPhone(phone){
-    var re=/^(\+?\d{1,}?)\s?(\(\d{3}\)|\d{3})[\d\-\s\b]*$/;
-    return re.test(phone);
-}
-
-function isCorrectEmail(email){
-    var re=/^\w+@[а-я\w-]+\.[а-я\w-]+\.?[а-я\w-]+$/;
-    return re.test(email);
-}
-
-module.exports.add = function add(name, phone, email) {
-    if(isCorrectPhone(phone) && isCorrectEmail(email)){
+module.exports.tryAdd = function tryAdd(name, phone, email) {
+    var IS_CORRECT_PHONE=/^(\+?\d{1,}?)\s?(\(\d{3}\)|\d{3})[\d\-\s\b]*$/;
+    var IS_CORRECT_EMAIL=/^\w+@[а-я\w-]+\.[а-я\w-]+\.?[а-я\w-]+$/;
+    if(IS_CORRECT_PHONE.test(phone) && IS_CORRECT_EMAIL.test(email)){
         var contact ={
             name: name,
             phone: phone.replace(/\D/g,''),
             email: email
         }
         phoneBook.push(contact);
+        return true;
     }
+    return false;
 };
 
 function phoneToCorrectForm(phone){
@@ -29,9 +23,8 @@ function phoneToCorrectForm(phone){
     if(phone.length-7-3===0){
         correctPhone+='7';
     }
-    while(i<phone.length-7-3){
+    for(var i=0;i<phone.length-7-3;i++){
         correctPhone+=phone[i];
-        i++;
     }
     correctPhone+=' (';
     for(var j=0;j<3;j++){
@@ -50,33 +43,30 @@ function phoneToCorrectForm(phone){
     return correctPhone;
 }
 
-module.exports.find = function find(query, outputOnConsole) {
+module.exports.outputOnConsole=function outputOnConsole(arrayForPrint){
+    for(var i=0;i<arrayForPrint.length;i++){
+        console.log(phoneBook[i].name+', '+phoneToCorrectForm(phoneBook[i].phone)+', '+phoneBook[i].email);
+    }
+}
+module.exports.find = function find(query) {
     var foundContacts=[];
-    if (!query) {
-        for (var i = 0; i < phoneBook.length; i++) {
-            console.log(phoneBook[i].name+', '+phoneToCorrectForm(phoneBook[i].phone)+', '+phoneBook[i].email);
-        }
-    } else {
-        for (var i = 0; i < phoneBook.length; i++){
-            if(phoneBook[i].name.indexOf(query)!=-1 || phoneBook[i].phone.indexOf(query)!=-1 || phoneBook[i].email.indexOf(query)!=-1){
-                    foundContacts.push(phoneBook[i]);
-                if(outputOnConsole===true){
-                    console.log(phoneBook[i].name+', '+phoneToCorrectForm(phoneBook[i].phone)+', '+phoneBook[i].email);
-                }
-            }
+    for (var i = 0; i < phoneBook.length; i++){
+        if(phoneBook[i].name.indexOf(query)!==-1 || phoneBook[i].phone.indexOf(query)!==-1 || phoneBook[i].email.indexOf(query)!==-1){
+            foundContacts.push(phoneBook[i]);
         }
     }
     return foundContacts;
 };
 
 module.exports.remove = function remove(query) {
-    var contactsToRemove=module.exports.find(query,false);
-        for (var i = 0; i <contactsToRemove.length; i++){
-            for(var j=0;j<phoneBook.length;j++){
-                if(contactsToRemove[i]===phoneBook[j]){
-                    phoneBook.splice(j,1);
-                }
+    var contactsToRemove=module.exports.find(query);
+    for (var i = 0; i <contactsToRemove.length; i++){
+        for(var j=0;j<phoneBook.length;j++){
+            if(contactsToRemove[i]===phoneBook[j]){
+                phoneBook.splice(j,1);
             }
         }
-        console.log('Удален(о) '+contactsToRemove.length+' контактов');
+    }
+    console.log('Удален(о) '+contactsToRemove.length+' контактов');
 };
+
